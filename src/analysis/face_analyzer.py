@@ -38,9 +38,12 @@ class FaceAnalyzer:
     def check_head_pose(self, landmarks):
         """
         Calculates if the head is tilted down.
+        코 끝(1번)과 양 눈 사이(8번)의 Y축 거리 차이를 계산합니다.
+        고개를 숙이면 코 끝이 눈 위치보다 상대적으로 더 아래로 내려가므로 이 값이 커집니다.
         """
         nose_tip = landmarks[1]
         between_eyes = landmarks[8]
+        # nose_tip.y가 between_eyes.y보다 클수록(아래에 있을수록) 양수 값이 커짐
         return nose_tip.y - between_eyes.y
 
     def get_frame_violation(self, landmarks, left_eye_indices, right_eye_indices):
