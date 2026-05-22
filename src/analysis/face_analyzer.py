@@ -49,4 +49,3 @@ class FaceAnalyzer:
             return "눈 감음"
 
         return None
-
