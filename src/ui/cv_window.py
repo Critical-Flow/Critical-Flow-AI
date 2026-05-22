@@ -21,10 +21,14 @@ class UIManager:
         elapsed = state_info["elapsed"]
         
         # Color based on status
-        color = config.COLOR_CONCENTRATED if status == "집중 상태" else config.COLOR_DISTRACTED
+        color = config.COLOR_CONCENTRATED if status == "좋음" else config.COLOR_DISTRACTED
         
         # Main status
-        display_main = "Concentrated" if status == "집중 상태" else "Distracted"
+        display_main = "Good" if status == "좋음" else status
+        # If the status is a violation type, display it in English if possible
+        display_main = display_main.replace("이탈", "Away")
+        display_main = display_main.replace("눈 감음", "Eyes Closed")
+        
         cv2.putText(image, display_main, (30, 50), config.FONT_FACE, 1, color, 2)
         
         # Detail status
@@ -32,8 +36,7 @@ class UIManager:
             detail_text = f"{violation} ({elapsed:.1f}s)"
             # Localization for UI
             detail_text = detail_text.replace("눈 감음", "Eyes Closed")
-            detail_text = detail_text.replace("핸드폰/숙임", "Looking Down")
-            detail_text = detail_text.replace("자리 비움", "Away")
+            detail_text = detail_text.replace("이탈", "Away")
             cv2.putText(image, detail_text, (30, 90), config.FONT_FACE, 0.7, color, 2)
         else:
             cv2.putText(image, "Stable", (30, 90), config.FONT_FACE, 0.7, color, 2)

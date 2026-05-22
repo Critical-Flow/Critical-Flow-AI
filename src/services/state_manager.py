@@ -13,7 +13,7 @@ class StateManager:
         self.timeout = timeout
         self.log_file = log_file
         
-        self.confirmed_status = "집중 상태"
+        self.confirmed_status = "좋음"
         self.last_logged_status = "초기화"
         self.distraction_start_time = None
         self.current_violation_type = None
@@ -31,13 +31,13 @@ class StateManager:
             self.elapsed_time = time.time() - self.distraction_start_time
             
             if self.elapsed_time >= self.timeout:
-                self.confirmed_status = f"비집중 ({self.current_violation_type})"
+                self.confirmed_status = self.current_violation_type
             else:
-                self.confirmed_status = "집중 상태"
+                self.confirmed_status = "좋음"
         else:
             self.distraction_start_time = None
             self.current_violation_type = None
-            self.confirmed_status = "집중 상태"
+            self.confirmed_status = "좋음"
             self.elapsed_time = 0.0
 
         self._log_if_changed()

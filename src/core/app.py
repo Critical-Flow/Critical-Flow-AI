@@ -15,7 +15,7 @@ class ConcentrationApp:
     """
     def __init__(self):
         self.detector = FaceDetector()
-        self.analyzer = FaceAnalyzer(config.EAR_THRESHOLD, config.HEAD_POSE_THRESHOLD)
+        self.analyzer = FaceAnalyzer(config.EAR_THRESHOLD)
         self.state_mgr = StateManager(config.DISTRACTION_TIMEOUT, config.LOG_FILE)
         self.ui = UIManager(config.WINDOW_NAME)
         self.cap = None
