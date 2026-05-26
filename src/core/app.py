@@ -1,65 +1,48 @@
-import cv2
-from src.core import config
-from src.detection.face_detector import FaceDetector
-from src.analysis.face_analyzer import FaceAnalyzer
-from src.services.state_manager import StateManager
-from src.ui.cv_window import UIManager
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-"""
-각 컴포넌트를 조립하여 앱 실행 (ConcentrationApp 클래스)
-"""
+from src.api.session_router import create_session_router
+from src.core.config import BACKEND_URL
+from src.engine.mediapipe_engine import RealMediaPipeEngine
+from src.repository.backend_client import BackendClient
+from src.service.session_orchestrator import SessionOrchestrator
+from src.service.session_report_service import SessionReportService
 
-class ConcentrationApp:
+
+def create_app() -> FastAPI:
     """
-    Main Application Controller that orchestrates all components.
+    FastAPI 앱 팩토리 함수 — 의존성을 조립하고 라우터를 등록한 뒤 앱을 반환.
+
+    Spring 의 @SpringBootApplication + @Configuration 역할.
+    엔진 교체 시 engine_factory 한 줄만 수정하면 됩니다:
+      SimulatedAnalysisEngine  →  RealMediaPipeEngine  (OCP)
     """
-    def __init__(self):
-        self.detector = FaceDetector()
-        self.analyzer = FaceAnalyzer(config.EAR_THRESHOLD)
-        self.state_mgr = StateManager(config.DISTRACTION_TIMEOUT, config.LOG_FILE)
-        self.ui = UIManager(config.WINDOW_NAME)
-        self.cap = None
 
-    def run(self):
-        self.cap = cv2.VideoCapture(0)
-        if not self.cap.isOpened():
-            print("Error: Could not open webcam.")
-            return
+    # ── ① 의존성 조립 (Dependency Wiring) ────────────────────
+    backend_client = BackendClient(url=BACKEND_URL)
+    report_service = SessionReportService(backend_client=backend_client)
+    orchestrator   = SessionOrchestrator(
+        engine_factory = RealMediaPipeEngine,
+        report_service = report_service,
+    )
 
-        print(f"Starting {config.WINDOW_NAME}. Press 'q' to quit.")
+    # ── ② FastAPI 앱 생성 ─────────────────────────────────────
+    app = FastAPI(
+        title       = "Critical Flow AI",
+        description = "학습 집중도 실시간 분석 API",
+        version     = "1.0.0",
+    )
 
-        try:
-            while self.cap.isOpened():
-                success, image = self.cap.read()
-                if not success:
-                    break
+    # ── ③ CORS 미들웨어 등록 ──────────────────────────────────
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins     = ["*"],
+        allow_credentials = True,
+        allow_methods     = ["*"],
+        allow_headers     = ["*"],
+    )
 
-                # Pre-processing
-                image = cv2.flip(image, 1)
-                image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                
-                # Detection
-                landmarks = self.detector.process(image_rgb)
-                
-                # Analysis
-                violation = self.analyzer.get_frame_violation(
-                    landmarks, config.LEFT_EYE, config.RIGHT_EYE
-                )
-                
-                # State Update
-                self.state_mgr.update(violation)
-                
-                # UI Rendering
-                self.ui.render(image, self.state_mgr.get_current_info())
+    # ── ④ 라우터 등록 (의존성 주입) ───────────────────────────
+    app.include_router(create_session_router(orchestrator))
 
-                if self.ui.should_exit():
-                    break
-        finally:
-            self._cleanup()
-
-    def _cleanup(self):
-        if self.cap:
-            self.cap.release()
-        self.detector.close()
-        self.ui.close()
-        print("Application closed.")
+    return app

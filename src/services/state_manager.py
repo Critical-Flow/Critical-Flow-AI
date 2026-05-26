@@ -1,18 +1,13 @@
 import time
-import os
 
 """
-집중 상태 판단, 타이머, 로그 기록 (StateManager 클래스)
+집중 상태 판단, 타이머 (StateManager 클래스)
 """
 
 class StateManager:
-    """
-    Manages concentration state, timers, and logging.
-    """
-    def __init__(self, timeout, log_file):
+    def __init__(self, timeout):
         self.timeout = timeout
-        self.log_file = log_file
-        
+
         self.confirmed_status = "좋음"
         self.last_logged_status = "초기화"
         self.distraction_start_time = None
@@ -46,12 +41,7 @@ class StateManager:
     def _log_if_changed(self):
         if self.confirmed_status != self.last_logged_status:
             current_time_str = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-            log_message = f"[{current_time_str}] 상태 변경: {self.confirmed_status}"
-            print(log_message)
-            
-            with open(self.log_file, "a", encoding="utf-8") as f:
-                f.write(log_message + "\n")
-            
+            print(f"[{current_time_str}] 상태 변경: {self.confirmed_status}")
             self.last_logged_status = self.confirmed_status
 
     def get_current_info(self):
