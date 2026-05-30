@@ -2,8 +2,9 @@
 # 애플리케이션 전역 설정 상수
 
 # ── API 서버 설정 ──────────────────────────────────────────────
-BACKEND_URL   = "http://localhost:8080/api/v1/sessions/end"
-LOOP_INTERVAL = 1.0   # 상태 누적 주기 (초)
+BACKEND_URL      = "http://localhost:8080/api/v1/sessions/end"
+FOCUS_EVENTS_URL = "http://localhost:8080/api/v1/focus-events"
+LOOP_INTERVAL    = 1.0   # 상태 누적 주기 (초)
 
 # ── MediaPipe Face Mesh 랜드마크 인덱스 ───────────────────────
 LEFT_EYE  = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]

@@ -5,12 +5,14 @@ from src.analysis.face_analyzer import FaceAnalyzer
 from src.core.config import (
     DISTRACTION_TIMEOUT,
     EAR_THRESHOLD,
+    FOCUS_EVENTS_URL,
     LEFT_EYE,
     RIGHT_EYE,
 )
 from src.detection.face_detector import FaceDetector
 from src.domain.enums import FocusState
 from src.engine.interface import IAnalysisEngine
+from src.repository.focus_event_client import FocusEventClient
 from src.services.state_manager import StateManager
 
 
@@ -36,7 +38,8 @@ class RealMediaPipeEngine(IAnalysisEngine):
     def __init__(self) -> None:
         self._detector  = FaceDetector()
         self._analyzer  = FaceAnalyzer(EAR_THRESHOLD)
-        self._state_mgr = StateManager(DISTRACTION_TIMEOUT)
+        _event_client   = FocusEventClient(FOCUS_EVENTS_URL)
+        self._state_mgr = StateManager(DISTRACTION_TIMEOUT, _event_client)
         self._left_eye  = LEFT_EYE
         self._right_eye = RIGHT_EYE
 
