@@ -3,7 +3,7 @@
 
 # ── API 서버 설정 ──────────────────────────────────────────────
 BACKEND_URL      = "http://localhost:8080/api/v1/sessions/end"
-FOCUS_EVENTS_URL = "http://localhost:8080/api/v1/focus-events"
+FOCUS_EVENTS_URL = "http://localhost:8080/api/v1/sessions/{userId}/focus-events"
 LOOP_INTERVAL    = 1.0   # 상태 누적 주기 (초)
 
 # ── MediaPipe Face Mesh 랜드마크 인덱스 ───────────────────────

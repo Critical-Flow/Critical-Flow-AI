@@ -24,8 +24,9 @@ class FocusEventClient:
 
     _TIMEOUT: float = 3.0   # 요청 타임아웃 (초)
 
-    def __init__(self, url: str) -> None:
-        self._url = url
+    def __init__(self, url: str, user_id: int) -> None:
+        self._url     = url
+        self._user_id = user_id
 
     # ── Public ────────────────────────────────────────────────
 
@@ -47,11 +48,13 @@ class FocusEventClient:
     def _send(self, event_type: str) -> None:
         """실제 HTTP POST 전송. 모든 예외를 처리하여 프로그램이 중단되지 않도록 한다."""
         payload = {
+            "userId":    self._user_id,
             "eventType": event_type,
             "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime()),
         }
         try:
-            response = requests.post(self._url, json=payload, timeout=self._TIMEOUT)
+            url = self._url.format(userId=self._user_id)
+            response = requests.post(url, json=payload, timeout=self._TIMEOUT)
             response.raise_for_status()
             print(f"[EVENT] {event_type} → 전송 성공 ({response.status_code})")
 

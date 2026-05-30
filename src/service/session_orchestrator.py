@@ -25,7 +25,7 @@ class SessionOrchestrator:
 
     def __init__(
         self,
-        engine_factory: Callable[[], IAnalysisEngine],
+        engine_factory: Callable[[int], IAnalysisEngine],
         report_service: SessionReportService,
     ) -> None:
         self._engine_factory  = engine_factory
@@ -44,7 +44,7 @@ class SessionOrchestrator:
 
         self._user_id        = user_id
         self._data           = SessionData()
-        engine               = self._engine_factory()
+        engine               = self._engine_factory(user_id)
         self._webcam_service = WebcamAnalysisService(engine, self._data)
         self._is_running     = True
         self._start_time     = time.time()
