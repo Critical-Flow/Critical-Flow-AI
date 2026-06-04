@@ -5,6 +5,8 @@ from src.analysis.face_analyzer import FaceAnalyzer
 from src.core.config import (
     DISTRACTION_TIMEOUT,
     EAR_THRESHOLD,
+    ESP32_ENABLED,
+    ESP32_URL,
     FOCUS_EVENTS_URL,
     LEFT_EYE,
     RIGHT_EYE,
@@ -12,8 +14,9 @@ from src.core.config import (
 from src.detection.face_detector import FaceDetector
 from src.domain.enums import FocusState
 from src.engine.interface import IAnalysisEngine
+from src.repository.esp32_client import Esp32Client
 from src.repository.focus_event_client import FocusEventClient
-from src.services.state_manager import StateManager
+from src.service.state_manager import StateManager
 
 
 class RealMediaPipeEngine(IAnalysisEngine):
@@ -36,12 +39,17 @@ class RealMediaPipeEngine(IAnalysisEngine):
     }
 
     def __init__(self, user_id: int) -> None:
-        self._detector  = FaceDetector()
-        self._analyzer  = FaceAnalyzer(EAR_THRESHOLD)
-        _event_client   = FocusEventClient(FOCUS_EVENTS_URL, user_id)
-        self._state_mgr = StateManager(DISTRACTION_TIMEOUT, _event_client)
-        self._left_eye  = LEFT_EYE
-        self._right_eye = RIGHT_EYE
+        self._detector    = FaceDetector()
+        self._analyzer    = FaceAnalyzer(EAR_THRESHOLD)
+        _event_client     = FocusEventClient(FOCUS_EVENTS_URL, user_id)
+        _esp32_client     = Esp32Client(ESP32_URL) if ESP32_ENABLED else None
+        self._state_mgr   = StateManager(
+            timeout       = DISTRACTION_TIMEOUT,
+            event_client  = _event_client,
+            extra_clients = [_esp32_client] if _esp32_client else [],
+        )
+        self._left_eye    = LEFT_EYE
+        self._right_eye   = RIGHT_EYE
 
     def analyze(self, frame: np.ndarray) -> FocusState:
         """

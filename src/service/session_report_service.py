@@ -5,6 +5,7 @@ from src.repository.backend_client import BackendClient
 
 class SessionReportService:
     """
+    세션 결과 백엔드 전송
     학습 세션의 최종 통계를 계산하고 Repository 에 전송을 위임한다.
 
     [SRP] 비즈니스 계산 로직 + 전송 위임만 담당. 네트워크 I/O 는 BackendClient 에 위임.
