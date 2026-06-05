@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.session_router import create_session_router
-from src.core.config import BACKEND_URL
+from src.core.config import BACKEND_URL, FOCUS_EVENTS_URL
 from src.engine.mediapipe_engine import RealMediaPipeEngine
 from src.repository.backend_client import BackendClient
 from src.service.session_orchestrator import SessionOrchestrator

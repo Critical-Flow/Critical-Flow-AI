@@ -14,12 +14,13 @@ class BackendClient:
     def __init__(self, url: str) -> None:
         self._url = url
 
-    async def post_session_result(self, result: SessionResult) -> str:
+    async def post_session_result(self, result: SessionResult, session_id: int) -> str:
         """학습 세션 결과를 백엔드에 POST 전송하고 처리 결과를 반환."""
+        url = self._url.format(sessionId=session_id)
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(
-                    self._url,
+                    url,
                     json=result.model_dump(),
                     timeout=10.0,
                 )

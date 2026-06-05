@@ -51,6 +51,6 @@ class SessionReportService:
             absentCount       = data.absent_count,
         )
 
-    async def send(self, result: SessionResult) -> str:
+    async def send(self, result: SessionResult, session_id: int) -> str:
         """계산된 결과를 Repository 계층(BackendClient)에 전달."""
-        return await self._backend_client.post_session_result(result)
+        return await self._backend_client.post_session_result(result, session_id=session_id)

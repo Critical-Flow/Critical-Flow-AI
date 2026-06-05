@@ -1,0 +1,45 @@
+name: Deploy Python AI Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: GHCR 로그인
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker 이미지 빌드 및 푸시
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/critical-flow/critical-flow-ai:latest
+
+      - name: EC2 배포
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull ghcr.io/critical-flow/critical-flow-ai:latest
+            docker stop criticalflow-python || true
+            docker rm criticalflow-python || true
+            docker run -d \
+              --name criticalflow-python \
+              --restart unless-stopped \
+              -p 5000:5000 \
+              ghcr.io/critical-flow/critical-flow-ai:latest
+            docker image prune -f
