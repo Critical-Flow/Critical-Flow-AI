@@ -19,4 +19,4 @@ app = create_app()
 
 if __name__ == "__main__":
     # reload=False — run_in_executor 스레드와 핫 리로드 충돌 방지
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)
+    uvicorn.run("main:app", host="0.0.0.0", port=5000, reload=False)

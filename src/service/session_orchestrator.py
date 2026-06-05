@@ -31,17 +31,19 @@ class SessionOrchestrator:
         self._engine_factory  = engine_factory
         self._report_service  = report_service
         self._is_running:     bool                            = False
+        self._session_id:     Optional[int]                   = None
         self._user_id:        Optional[int]                   = None
         self._start_time:     Optional[float]                 = None
         self._webcam_service: Optional[WebcamAnalysisService] = None
         self._data:           Optional[SessionData]           = None
         self._future:         Optional[asyncio.Future]        = None
 
-    async def start(self, user_id: int) -> dict:
+    async def start(self, session_id: int, user_id: int) -> dict:
         """세션 초기화 → 웹캠 루프를 executor 스레드로 기동."""
         if self._is_running:
             raise RuntimeError("이미 실행 중인 세션이 있습니다.")
 
+        self._session_id     = session_id
         self._user_id        = user_id
         self._data           = SessionData()
         engine               = self._engine_factory(user_id)
@@ -73,7 +75,7 @@ class SessionOrchestrator:
             start_time = self._start_time,
             end_time   = end_time,
         )
-        sync_status = await self._report_service.send(result)
+        sync_status = await self._report_service.send(result, session_id=self._session_id)
 
         response = {
             "status":      "stopped",

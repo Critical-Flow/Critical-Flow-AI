@@ -2,8 +2,9 @@
 # 애플리케이션 전역 설정 상수
 
 # ── API 서버 설정 ──────────────────────────────────────────────
-BACKEND_URL      = "http://localhost:8080/api/v1/sessions/end"
-FOCUS_EVENTS_URL = "https://api.aice-edu.site/api/v1/sessions/{userId}/focus-events"
+# {sessionId} 는 BackendClient 에서 치환됩니다.
+BACKEND_URL      = "http://app:8080/api/v1/sessions/{sessionId}/vision-result"
+FOCUS_EVENTS_URL = "http://app:8080/api/v1/sessions/{userId}/focus-events"
 LOOP_INTERVAL    = 1.0   # 상태 누적 주기 (초)
 
 # ── MediaPipe Face Mesh 랜드마크 인덱스 ───────────────────────
