@@ -1,13 +1,14 @@
 import time
-from typing import TYPE_CHECKING, Optional
+from typing import Optional, Protocol, Sequence
 
-if TYPE_CHECKING:
-    from src.repository.focus_event_client import FocusEventClient
+
+class EventClient(Protocol):
+    """post_event(event_type) 를 가진 모든 클라이언트를 허용하는 프로토콜."""
+    def post_event(self, event_type: str) -> None: ...
 
 """
 집중 상태 판단, 타이머, 상태 전환 이벤트 발송 (StateManager 클래스)
 """
-
 
 class StateManager:
     """
@@ -41,10 +42,14 @@ class StateManager:
     def __init__(
         self,
         timeout: float,
-        event_client: Optional["FocusEventClient"] = None,
+        event_client: Optional[EventClient] = None,
+        extra_clients: Sequence[EventClient] = (),
     ) -> None:
         self.timeout = timeout
-        self._event_client = event_client
+        # 모든 클라이언트를 하나의 리스트로 통합 관리
+        self._clients: list[EventClient] = (
+            [event_client] if event_client is not None else []
+        ) + list(extra_clients)
 
         self.confirmed_status    = "좋음"
         self.last_logged_status  = "초기화"   # 초기화 → 좋음 전환은 이벤트 미전송
@@ -96,8 +101,9 @@ class StateManager:
         print(f"[{current_time_str}] 상태 변경: {prev} → {new}")
 
         # 초기화 → 좋음 전환(앱 시작)은 이벤트를 보내지 않음
-        if self._event_client is not None and prev != "초기화":
+        if self._clients and prev != "초기화":
             for event_type in self._TRANSITION_EVENTS.get((prev, new), []):
-                self._event_client.post_event(event_type)
+                for client in self._clients:
+                    client.post_event(event_type)
 
         self.last_logged_status = new
