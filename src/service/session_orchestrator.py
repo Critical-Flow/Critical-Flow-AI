@@ -67,6 +67,16 @@ class SessionOrchestrator:
             raise RuntimeError("실행 중인 세션이 없습니다. /vision/start 를 먼저 호출하세요.")
         return self._frame_service.process_frame(frame_bytes)
 
+    def get_status(self) -> dict:
+        """
+        ESP32 폴링용 — 현재 집중 상태를 반환.
+        세션이 없으면 GOOD / isActive=false 반환.
+        """
+        if not self._is_running or self._frame_service is None:
+            return {"focusState": "GOOD", "isActive": False}
+        state = self._frame_service.get_current_state()
+        return {"focusState": state.value, "isActive": True}
+
     async def stop(self) -> dict:
         """분석 종료 → 집계 결과 Spring 서버로 전송."""
         if not self._is_running:

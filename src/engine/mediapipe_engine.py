@@ -12,8 +12,6 @@ from src.core.config import (
     DROWSY_RECOVERY_COOLDOWN_SECONDS,
     DROWSY_RECOVERY_WINDOW_SECONDS,
     EAR_THRESHOLD,
-    ESP32_ENABLED,
-    ESP32_URL,
     FACE_LOST_RESET_SECONDS,
     FOCUS_EVENTS_URL,
     LEFT_EYE,
@@ -24,7 +22,6 @@ from src.core.config import (
 from src.detection.face_detector import FaceDetector
 from src.domain.enums import FocusState
 from src.engine.interface import IAnalysisEngine
-from src.repository.esp32_client import Esp32Client
 from src.repository.focus_event_client import FocusEventClient
 from src.service.state_manager import StateManager
 from src.services.drowsiness_manager import DrowsinessManager
@@ -56,12 +53,10 @@ class RealMediaPipeEngine(IAnalysisEngine):
         self._analyzer  = FaceAnalyzer(EAR_THRESHOLD)
 
         _event_client   = FocusEventClient(FOCUS_EVENTS_URL, user_id)
-        _esp32_client   = Esp32Client(ESP32_URL) if ESP32_ENABLED else None
 
         self._state_mgr = StateManager(
-            timeout       = DISTRACTION_TIMEOUT,
-            event_client  = _event_client,
-            extra_clients = [_esp32_client] if _esp32_client else [],
+            timeout      = DISTRACTION_TIMEOUT,
+            event_client = _event_client,
         )
 
         self._drowsiness_mgr = DrowsinessManager(

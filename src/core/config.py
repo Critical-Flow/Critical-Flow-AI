@@ -7,11 +7,6 @@ BACKEND_URL      = "http://app:8080/api/v1/sessions/{sessionId}/vision-result"
 FOCUS_EVENTS_URL = "http://app:8080/api/v1/sessions/{userId}/focus-events"
 LOOP_INTERVAL    = 1.0   # 상태 누적 주기 (초)
 
-# ── ESP32 IoT 설정 ──────────────────────────────────────────────
-# ESP32 의 실제 IP 주소로 변경하세요 (공유기 DHCP 확인 또는 고정 IP 권장)
-ESP32_URL        = "http://192.168.0.50/alert"   # ESP32 HTTP 엔드포인트
-ESP32_ENABLED    = True                           # False 로 바꾸면 ESP32 전송 비활성화
-
 # ── MediaPipe Face Mesh 랜드마크 인덱스 ───────────────────────
 LEFT_EYE  = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]
 RIGHT_EYE = [33,  7,   163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246]
