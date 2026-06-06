@@ -60,3 +60,13 @@ COLOR_CONCENTRATED = (0, 255, 0)  # 집중: 초록
 COLOR_DISTRACTED = (0, 0, 255)    # 분산: 빨강
 
 FONT_FACE = 0  # cv2.FONT_HERSHEY_SIMPLEX
+
+# ── Arduino / Solenoid 설정 ───────────────────────────────
+ARDUINO_PORT = None
+ARDUINO_BAUD = 115200
+ARDUINO_DRY_RUN = True
+
+ARDUINO_PULSE_MS = 50
+ARDUINO_BURST_COUNT = 3
+
+ALERT_REPEAT_SECONDS = 20.0

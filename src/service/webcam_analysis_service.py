@@ -7,7 +7,9 @@ from src.core.config import LOOP_INTERVAL, WINDOW_NAME
 from src.domain.session_data import SessionData
 from src.engine.interface import IAnalysisEngine
 from src.ui.cv_window import UIManager
-
+from src.core import config
+from src.domain.enums import FocusState
+from src.services.arduino_notify import ArduinoNotifier
 
 class WebcamAnalysisService:
     """
@@ -27,6 +29,16 @@ class WebcamAnalysisService:
         self._data       = data
         self._ui         = UIManager(WINDOW_NAME)
         self._stop_event = threading.Event()
+        self._notifier = ArduinoNotifier(
+            port=config.ARDUINO_PORT,
+            baudrate=config.ARDUINO_BAUD,
+            pulse_ms=config.ARDUINO_PULSE_MS,
+            burst_count=config.ARDUINO_BURST_COUNT,
+            dry_run=config.ARDUINO_DRY_RUN,
+        )
+
+        self._last_alert_time = 0.0
+        self._was_alerting = False
 
     def request_stop(self) -> None:
         """API 레이어에서 호출 → 분석 루프에 종료 신호 전달 (논블로킹)."""
@@ -52,6 +64,29 @@ class WebcamAnalysisService:
                 # ── 전처리 + 분석 ──────────────────────────────
                 frame = cv2.flip(frame, 1)
                 state = self._engine.analyze(frame)
+                should_alert = state == FocusState.DROWSY
+
+                now = time.monotonic()
+                force_alert = False
+
+                if should_alert:
+                    if not self._was_alerting:
+                        # 정상 -> 졸음 상태로 처음 들어온 순간
+                        self._last_alert_time = now
+                        self._was_alerting = True
+
+                    elif now - self._last_alert_time >= config.ALERT_REPEAT_SECONDS:
+                        # 졸음 상태가 계속 유지되면 일정 시간마다 반복 알림
+                        force_alert = True
+                        self._last_alert_time = now
+
+                else:
+                    # GOOD 또는 ABSENT
+                    # 자리비움은 알림 제외
+                    self._was_alerting = False
+                    self._last_alert_time = 0.0
+
+                self._notifier.notify(should_alert, force=force_alert)
 
                 # ── UI 렌더링: 상태 오버레이 → 화면 출력 ────────
                 self._ui.render(frame, self._engine.get_state_info())
@@ -65,5 +100,6 @@ class WebcamAnalysisService:
         finally:
             cap.release()
             self._engine.release()
+            self._notifier.close()
             self._ui.close()
             print("[INFO] 웹캠 분석 루프 종료.")
