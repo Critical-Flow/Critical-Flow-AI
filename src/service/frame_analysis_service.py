@@ -30,9 +30,10 @@ class FrameAnalysisService:
     """
 
     def __init__(self, engine: IAnalysisEngine, data: SessionData) -> None:
-        self._engine    = engine
-        self._data      = data
-        self._last_tick = time.time()
+        self._engine      = engine
+        self._data        = data
+        self._last_tick   = time.time()
+        self._last_state  = FocusState.GOOD   # ESP32 폴링용 현재 상태 캐시
 
     def process_frame(self, frame_bytes: bytes) -> dict:
         """
@@ -59,6 +60,7 @@ class FrameAnalysisService:
             raise ValueError("이미지 디코딩 실패 — 유효한 JPEG/PNG 파일을 전송하세요.")
 
         state: FocusState = self._engine.analyze(frame)
+        self._last_state  = state   # ESP32 폴링용 캐시 갱신
 
         # LOOP_INTERVAL(1초) 주기로 세션 누적 데이터 갱신
         now = time.time()
@@ -73,6 +75,10 @@ class FrameAnalysisService:
             "elapsed":       round(info["elapsed"], 2),
             "isTimerActive": info["is_timer_active"],
         }
+
+    def get_current_state(self) -> FocusState:
+        """ESP32 폴링용 — 마지막으로 분석된 집중 상태를 반환."""
+        return self._last_state
 
     def release(self) -> None:
         """분석 엔진 리소스 해제."""

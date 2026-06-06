@@ -66,6 +66,20 @@ def create_session_router(orchestrator: SessionOrchestrator) -> APIRouter:
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
 
+    @router.get("/alert", summary="현재 집중 상태 조회 (ESP32 폴링용)")
+    async def get_alert():
+        """
+        ESP32 가 1~2초 주기로 폴링하는 엔드포인트.
+        현재 집중 상태를 반환하며, ESP32 는 DROWSY/ABSENT 일 때 솔레노이드를 작동시킨다.
+
+        Response:
+          {
+            "focusState": "GOOD" | "DROWSY" | "ABSENT",
+            "isActive":   bool   # 세션 진행 중 여부
+          }
+        """
+        return orchestrator.get_status()
+
     @router.post("/stop", summary="분석 종료 및 결과 백엔드 전송")
     async def stop_session(body: StopRequest):
         """루프를 안전하게 종료하고 집계 데이터를 Spring Boot 서버로 전송."""
