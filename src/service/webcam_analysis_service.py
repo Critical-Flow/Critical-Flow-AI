@@ -11,6 +11,8 @@ from src.ui.cv_window import UIManager
 
 class WebcamAnalysisService:
     """
+    웹캠 분석 루프
+
     웹캠을 열고 매 프레임을 IAnalysisEngine 에 위임하며,
     LOOP_INTERVAL 주기로 SessionData 에 상태를 누적한다.
     UIManager 를 통해 분석 상태를 웹캠 화면에 실시간으로 오버레이한다.
