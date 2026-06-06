@@ -19,7 +19,8 @@ class UIManager:
     # 상태 한국어 → 영어 표시 매핑
     _LABEL_MAP = {
         "좋음":    "GOOD",
-        "눈 감음": "DROWSY",
+        "눈 감음": "EYES CLOSED",
+        "졸음":    "DROWSY",       # PERCLOS/연속 눈감김 확정 상태
         "이탈":    "ABSENT",
     }
 

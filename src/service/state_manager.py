@@ -30,13 +30,21 @@ class StateManager:
 
     # (이전 상태, 새 상태) → 전송할 이벤트 목록
     _TRANSITION_EVENTS: dict[tuple[str, str], list[str]] = {
-        ("좋음",   "눈 감음"): ["DROWSINESS_START"],
-        ("눈 감음", "좋음"):   ["DROWSINESS_END"],
-        ("좋음",   "이탈"):   ["AWAY_START"],
-        ("이탈",   "좋음"):   ["AWAY_END"],
+        ("좋음",    "눈 감음"): ["DROWSINESS_START"],
+        ("눈 감음", "좋음"):    ["DROWSINESS_END"],
+        # 졸음 상태 전환 (PERCLOS/연속 눈감김 확정 시)
+        ("좋음",    "졸음"):    ["DROWSINESS_START"],
+        ("졸음",    "좋음"):    ["DROWSINESS_END"],
+        ("좋음",    "이탈"):    ["AWAY_START"],
+        ("이탈",    "좋음"):    ["AWAY_END"],
         # 교차 전환: 이전 상태를 먼저 종료한 뒤 새 상태를 시작
-        ("눈 감음", "이탈"):   ["DROWSINESS_END", "AWAY_START"],
-        ("이탈",   "눈 감음"): ["AWAY_END",        "DROWSINESS_START"],
+        ("눈 감음", "이탈"):    ["DROWSINESS_END", "AWAY_START"],
+        ("이탈",    "눈 감음"): ["AWAY_END",        "DROWSINESS_START"],
+        ("졸음",    "이탈"):    ["DROWSINESS_END", "AWAY_START"],
+        ("이탈",    "졸음"):    ["AWAY_END",        "DROWSINESS_START"],
+        # 같은 졸음 계열 내부 전환은 이벤트 중복 방지
+        ("눈 감음", "졸음"):    [],
+        ("졸음",    "눈 감음"): [],
     }
 
     def __init__(
