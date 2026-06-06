@@ -1,49 +1,101 @@
+# src/analysis/face_analyzer.py
+
 import math
 
+
 """
-이탈 및 위조 등 수학적 분석 로직 (FaceAnalyzer 클래스)
+이탈 및 눈 상태 등 수학적 분석 로직 (FaceAnalyzer 클래스)
 """
+
 
 class FaceAnalyzer:
     """
     Handles mathematical analysis of face landmarks.
     """
-    def __init__(self, ear_threshold):
+
+    def __init__(self, ear_threshold, head_pose_threshold=None):
         self.ear_threshold = ear_threshold
+        self.head_pose_threshold = head_pose_threshold
+
+    def check_head_pose(self, landmarks):
+        """
+        코 끝(1번)과 양 눈 사이(8번)의 Y축 거리 차이를 계산한다.
+        고개를 숙이면 코 끝이 눈 위치보다 상대적으로 더 아래로 내려가므로 이 값이 커진다.
+        """
+        if not landmarks:
+            return None
+
+        try:
+            nose_tip = landmarks[1]
+            between_eyes = landmarks[8]
+            return nose_tip.y - between_eyes.y
+        except Exception:
+            return None
 
     def calculate_ear(self, landmarks, eye_indices):
         """
-        Calculates Eye Aspect Ratio (EAR).
+        Eye Aspect Ratio, EAR 계산.
+
+        현재 eye_indices는 16개짜리 MediaPipe 눈 인덱스를 사용한다.
+        기존 프로젝트 방식에 맞춰:
+        - 가로: eye_indices[0] 과 eye_indices[8]
+        - 세로: eye_indices[12] 와 eye_indices[4]
+        를 이용해 간단 EAR을 계산한다.
         """
         try:
-            # Horizontal distance
             p1 = landmarks[eye_indices[0]]
             p2 = landmarks[eye_indices[8]]
 
-            # Vertical distance
             p3 = landmarks[eye_indices[12]]
             p4 = landmarks[eye_indices[4]]
 
             def dist(a, b):
-                return math.sqrt((a.x - b.x)**2 + (a.y - b.y)**2)
+                return math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
 
             width = dist(p1, p2)
             height = dist(p3, p4)
 
+            if width == 0:
+                return 1.0
+
             return height / width
+
         except Exception:
             return 1.0
 
+    def get_avg_ear(self, landmarks, left_eye_indices, right_eye_indices):
+        """
+        양쪽 눈의 평균 EAR 값을 반환한다.
+        얼굴이 없으면 None 반환.
+        """
+        if not landmarks:
+            return None
+
+        left_ear = self.calculate_ear(landmarks, left_eye_indices)
+        right_ear = self.calculate_ear(landmarks, right_eye_indices)
+
+        return (left_ear + right_ear) / 2.0
+
     def get_frame_violation(self, landmarks, left_eye_indices, right_eye_indices):
         """
-        Determines if there is a violation in the current frame based on landmarks.
+        현재 프레임에서 집중 위반 상태를 판단한다.
+
+        반환값:
+        - "이탈": 얼굴 미검출
+        - "눈 감음": EAR 기준 눈 감김
+        - None: 정상
         """
         if not landmarks:
             return "이탈"
 
-        left_ear = self.calculate_ear(landmarks, left_eye_indices)
-        right_ear = self.calculate_ear(landmarks, right_eye_indices)
-        avg_ear = (left_ear + right_ear) / 2.0
+        avg_ear = self.get_avg_ear(
+            landmarks,
+            left_eye_indices,
+            right_eye_indices,
+        )
+
+        if avg_ear is None:
+            return "이탈"
 
         if avg_ear < self.ear_threshold:
             return "눈 감음"
