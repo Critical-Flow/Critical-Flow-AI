@@ -50,7 +50,7 @@ class SessionOrchestrator:
         self._session_id    = session_id
         self._user_id       = user_id
         self._data          = SessionData()
-        engine              = self._engine_factory(user_id)
+        engine              = self._engine_factory(session_id)
         self._frame_service = FrameAnalysisService(engine, self._data)
         self._is_running    = True
         self._start_time    = time.time()
