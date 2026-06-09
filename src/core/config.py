@@ -4,7 +4,7 @@
 # ── API 서버 설정 ──────────────────────────────────────────────
 # {sessionId} 는 BackendClient 에서 치환됩니다.
 BACKEND_URL      = "https://api.aice-edu.site/api/v1/sessions/{sessionId}/vision-result"
-FOCUS_EVENTS_URL = "https://api.aice-edu.site/api/v1/sessions/{userId}/focus-events"
+FOCUS_EVENTS_URL = "https://api.aice-edu.site/api/v1/sessions/{sessionId}/focus-events"
 LOOP_INTERVAL    = 1.0   # 상태 누적 주기 (초)
 
 # ── MediaPipe Face Mesh 랜드마크 인덱스 ───────────────────────

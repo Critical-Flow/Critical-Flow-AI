@@ -48,11 +48,11 @@ class RealMediaPipeEngine(IAnalysisEngine):
         "이탈":    FocusState.ABSENT,
     }
 
-    def __init__(self, user_id: int) -> None:
+    def __init__(self, session_id: int) -> None:
         self._detector  = FaceDetector()
         self._analyzer  = FaceAnalyzer(EAR_THRESHOLD)
 
-        _event_client   = FocusEventClient(FOCUS_EVENTS_URL, user_id)
+        _event_client   = FocusEventClient(FOCUS_EVENTS_URL, session_id)
 
         self._state_mgr = StateManager(
             timeout      = DISTRACTION_TIMEOUT,
